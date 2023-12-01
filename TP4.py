@@ -47,7 +47,8 @@ def cluster_analyzer(df,n):
         plt.show()
 
 def data_viz(df):
-      
+        cols = ['BALANCE', 'ONEOFF_PURCHASES', 'INSTALLMENTS_PURCHASES', 'CASH_ADVANCE', 'ONEOFF_PURCHASES_FREQUENCY','PURCHASES_INSTALLMENTS_FREQUENCY', 'CASH_ADVANCE_TRX', 'PURCHASES_TRX', 'CREDIT_LIMIT', 'PAYMENTS', 'MINIMUM_PAYMENTS', 'PRC_FULL_PAYMENT']
+        """""
         # Boxplot for each numerical variable
         df.boxplot(figsize=(12, 6))
         plt.show()
@@ -59,14 +60,20 @@ def data_viz(df):
             sns.countplot(x=col, data=df)
             plt.show()
                 
-        
-        p = sns.histplot(df["age"], color="green", kde=True, bins=50, alpha=1, fill=True, edgecolor="black")
-        p.axes.lines[0].set_color("#101B15")
-        p.axes.set_title("\n Age Distribution\n", fontsize=25)
-        plt.ylabel("Count", fontsize=20)
-        plt.xlabel("Age", fontsize=20)
-        sns.despine(left=True, bottom=True)
-        plt.show()
+            
+        for col in cols: 
+             
+            p = sns.histplot(df[col], color="green", kde=True, bins=50, alpha=1, fill=True, edgecolor="black")
+            p.axes.lines[0].set_color("#101B15")
+            p.axes.set_title("\n Age Distribution\n", fontsize=25)
+            plt.ylabel("Count", fontsize=20)
+            plt.xlabel(col, fontsize=20)
+            sns.despine(left=True, bottom=True)
+            plt.show()
+        """
+
+        fig = plt.figure(figsize = (15,15))
+        sns.heatmap(df.corr(), cmap = 'Blues', square = True, annot = True, linewidths = 0.5)    
 
 
 def Kmeans(df, data): 
@@ -100,14 +107,15 @@ def Kmeans(df, data):
     plt.show()
 
     if True : 
-            kmeans = KMeans(n_clusters=3,  random_state=23)
+            kmeans = KMeans(n_clusters=2,  random_state=23)
             kmeans.fit(df)
             y_means = kmeans.fit_predict(df)
             labels = kmeans.labels_
 
             fig = plt.figure(figsize=(10, 8))
             ax = fig.add_subplot(111, projection='3d')
-            colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # Adjust colors for 3 clusters
+            #colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # Adjust colors for 3 clusters
+            colors = ['#1f77b4', '#ff7f0e']  # Adjust colors for 3 clusters
 
             # Plotting points for each cluster
             for i, color in enumerate(colors):
@@ -133,7 +141,8 @@ def Kmeans(df, data):
             centroid = kmeans.cluster_centers_
 
             y_means = pd.DataFrame(index = y_means)
-            y_means = y_means.rename(index = {0:'Cluster 1',1:'Cluster 2',2:'Cluster 3'})
+            #y_means = y_means.rename(index = {0:'Cluster 1',1:'Cluster 2',2:'Cluster 3'})
+            y_means = y_means.rename(index = {0:'Cluster 1',1:'Cluster 2'})
             y_means.reset_index(level = 0,inplace = True)
             y_means = y_means.rename(columns = {'index':'Labels'})
 
@@ -178,12 +187,12 @@ def Kmeans(df, data):
             percentages = (cluster_counts / total_count) * 100
 
             plt.figure(figsize=(8, 8))
-            plt.pie(percentages, labels=[f'Cluster {i+1}' for i in range(3)], colors=colors, autopct='%1.1f%%',
+            plt.pie(percentages, labels=[f'Cluster {i+1}' for i in range(2)], colors=colors, autopct='%1.1f%%',
                     shadow=True, startangle=140)
             plt.title("Percentage Distribution of Clusters")
             plt.show()   
 
-    kmeans = KMeans(n_clusters=3 , random_state=23)  
+    kmeans = KMeans(n_clusters=2 , random_state=23)  
     labels = kmeans.fit_predict(df)  
 
 
@@ -283,6 +292,8 @@ def run(csv: str = './CC GENERAL.csv'):
 
   
         df = pd.read_csv(csv)
+         
+             
         print(df)
         print(df.info())        
         print(df.nunique())
@@ -296,25 +307,35 @@ def run(csv: str = './CC GENERAL.csv'):
         
         cols = ['BALANCE', 'ONEOFF_PURCHASES', 'INSTALLMENTS_PURCHASES', 'CASH_ADVANCE', 'ONEOFF_PURCHASES_FREQUENCY','PURCHASES_INSTALLMENTS_FREQUENCY', 'CASH_ADVANCE_TRX', 'PURCHASES_TRX', 'CREDIT_LIMIT', 'PAYMENTS', 'MINIMUM_PAYMENTS', 'PRC_FULL_PAYMENT']
         for col in cols:
-             df[col] = np.log(1 + df[col])
+            df[col] = np.log(1 + df[col])
+
+
+        sns.heatmap(df.corr(), cmap = 'Blues', square = True, annot = True, linewidths = 0.5)  
+        plt.show()
+
+        data_viz(df)    
         data = df
-        from sklearn.decomposition import PCA
-     
-        pca = PCA()
-        #X_red = pca.fit_transform(df) 
-        pca = PCA(n_components=2)
-        pca_fit = pca.fit_transform(df)
-        X_red = pd.DataFrame(data=pca_fit, columns=['PC1', 'PC2'])
-        from sklearn.cluster import KMeans
-       
-        if True:
-           cluster_analyzer(data,3)
-           #Kmeans(X_red ,data)
-           #optics(X_red)
-           #dbscan(X_red)
 
 
-       
+
+        if False:
+            from sklearn.decomposition import PCA
+        
+            pca = PCA()
+            #X_red = pca.fit_transform(df) 
+            pca = PCA(n_components=2)
+            pca_fit = pca.fit_transform(df)
+            X_red = pd.DataFrame(data=pca_fit, columns=['PC1', 'PC2'])
+            from sklearn.cluster import KMeans
+    
+        if False:
+            Kmeans(X_red ,data)
+            cluster_analyzer(data,3)
+            #optics(X_red)
+            #dbscan(X_red)
+
+
+        
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
